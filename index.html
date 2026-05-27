@@ -3,88 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台灣旅遊全能計算器</title>
+    <title>台灣旅遊交通碳足跡計算器</title>
     <style>
-        :root { --primary-color: #e8a7a1; --secondary-color: #f4e8e1; --text-color: #4a3e3d; --accent-color: #aac0af; }
-        body { font-family: "Microsoft JhengHei", sans-serif; background-color: #faf6f5; color: var(--text-color); padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { max-width: 600px; width: 100%; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 8px 24px rgba(232, 167, 161, 0.15); box-sizing: border-box; }
-        h1 { text-align: center; color: var(--primary-color); font-size: 24px; margin-bottom: 30px; }
-        .tab-buttons { display: flex; margin-bottom: 25px; gap: 8px; }
-        .tab-btn { flex: 1; padding: 10px; background-color: var(--secondary-color); border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: var(--text-color); }
-        .tab-btn.active { background-color: var(--primary-color); color: white; }
-        .calculator-content { display: none; }
-        .calculator-content.active { display: block; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; }
-        input, select { width: 100%; padding: 12px; border: 2px solid var(--secondary-color); border-radius: 8px; box-sizing: border-box; }
-        button.calc-btn { width: 100%; padding: 12px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .result { margin-top: 20px; padding: 15px; background-color: #fcfbfb; border-left: 4px solid var(--primary-color); border-radius: 4px; line-height: 1.6; }
+        :root {
+            --primary-color: #aac0af; /* 換成象徵環保減碳的文青綠色 */
+            --secondary-color: #f0f4f1;
+            --text-color: #4a3e3d;
+            --accent-color: #e8a7a1;
+        }
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: #fafbfb;
+            color: var(--text-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(170, 192, 175, 0.2);
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+            color: #5c7461;
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #8fa494;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 15px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            outline: none;
+        }
+        input:focus {
+            border-color: var(--primary-color);
+        }
+        button.calc-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button.calc-btn:hover {
+            background-color: #8fa494;
+        }
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #fcfcfc;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 4px;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+        .carbon-bar {
+            background-color: #eee;
+            height: 12px;
+            border-radius: 6px;
+            margin-top: 4px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .carbon-progress {
+            height: 100%;
+            background-color: var(--accent-color);
+            width: 0%;
+            transition: width 0.5s;
+        }
+        .progress-green {
+            background-color: #98ae9d;
+        }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h1>🎒 台灣旅遊全能計算器</h1>
-        <div class="tab-buttons">
-            <button class="tab-btn active" onclick="switchTab('currency')">💱 旅遊換算</button>
-            <button class="tab-btn" onclick="switchTab('carbon')">🌱 碳足跡</button>
-            <button class="tab-btn" onclick="switchTab('bmi')">⚖️ 旅客 BMI</button>
+        <h1>🌱 台灣旅遊交通碳足跡計算器</h1>
+        <div class="subtitle">旅行節能減碳 ‧ 守護台灣地方創生</div>
+        
+        <div class="input-group">
+            <label for="distance">預計旅遊交通總里程數 (公里/km)</label>
+            <input type="number" id="distance" placeholder="例如：從台北到九份來回約 80" min="1">
         </div>
         
-        <div id="currency" class="calculator-content active">
-            <div class="input-group">
-                <label for="currency-type">選擇外幣</label>
-                <select id="currency-type"><option value="USD">美金 (USD)</option><option value="JPY">日幣 (JPY)</option></select>
-            </div>
-            <div class="input-group"><label for="currency-amount">輸入外幣金額</label><input type="number" id="currency-amount" placeholder="請輸入金額"></div>
-            <button class="calc-btn" onclick="calcCurrency()">計算兌換台幣</button>
-            <div id="currency-result" class="result" style="display:none;"></div>
-        </div>
-
-        <div id="carbon" class="calculator-content">
-            <div class="input-group"><label for="distance">預計旅遊交通公里數 (km)</label><input type="number" id="distance" placeholder="例如：100"></div>
-            <button class="calc-btn" onclick="calcCarbon()">計算交通碳排</button>
-            <div id="carbon-result" class="result" style="display:none;"></div>
-        </div>
-
-        <div id="bmi" class="calculator-content">
-            <div class="input-group"><label for="height">身高 (cm)</label><input type="number" id="height" placeholder="例如：175"></div>
-            <div class="input-group"><label for="weight">體重 (kg)</label><input type="number" id="weight" placeholder="例如：65"></div>
-            <button class="calc-btn" onclick="calcBMI()">計算標準 BMI</button>
-            <div id="bmi-result" class="result" style="display:none;"></div>
-        </div>
+        <button class="calc-btn" onclick="calcCarbon()">計算不同交通工具碳排放</button>
+        
+        <div id="carbon-result" class="result" style="display:none;"></div>
     </div>
 
     <script>
-        function switchTab(tabId) {
-            document.querySelectorAll('.calculator-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-        }
-        function calcCurrency() {
-            const type = document.getElementById('currency-type').value;
-            const amount = parseFloat(document.getElementById('currency-amount').value);
-            const resDiv = document.getElementById('currency-result');
-            if (isNaN(amount) || amount <= 0) return;
-            let rate = type === 'USD' ? 32.5 : 0.21;
-            resDiv.style.display = 'block';
-            resDiv.innerHTML = `💵 經 <strong>Codex</strong> 技術換算，${amount} ${type} 約可兌換 <strong> ${(amount * rate).toFixed(2)} </strong> 新台幣 (TWD)。`;
-        }
         function calcCarbon() {
             const km = parseFloat(document.getElementById('distance').value);
             const resDiv = document.getElementById('carbon-result');
-            if (isNaN(km) || km <= 0) return;
+
+            if (isNaN(km) || km <= 0) {
+                alert('請輸入正確的公里數');
+                return;
+            }
+
+            // 碳排放係數基準 (kg CO2e / 人公里)
+            const carEmission = (km * 0.17).toFixed(2);
+            const busEmission = (km * 0.03).toFixed(2);
+            const trainEmission = (km * 0.01).toFixed(2);
+
             resDiv.style.display = 'block';
-            resDiv.innerHTML = `🌿 <strong>本趟旅遊碳足跡評估：</strong><br>🚗 自駕汽車：${(km * 0.17).toFixed(2)} kg CO2e<br>🚄 台灣高鐵：${(km * 0.01).toFixed(2)} kg CO2e`;
-        }
-        function calcBMI() {
-            const h = parseFloat(document.getElementById('height').value) / 100;
-            const w = parseFloat(document.getElementById('weight').value);
-            const resDiv = document.getElementById('bmi-result');
-            if (isNaN(h) || isNaN(w)) return;
-            const bmi = (w / (h * h)).toFixed(1);
-            resDiv.style.display = 'block';
-            resDiv.innerHTML = `⚖️ <strong>標準公式計算結果：</strong><br>您的 BMI 指數為 <strong>${bmi}</strong>。<br>🏃‍♂️ 來到九份山城多爬石階，能有效保持身體健康！`;
+            resDiv.innerHTML = `
+                📊 <strong>經由 Codex 技術計算之碳足跡評估：</strong><br><br>
+                
+                🚗 <strong>自行開車（燃油車）：</strong> ${carEmission} kg CO2e
+                <div class="carbon-bar"><div class="carbon-progress" style="width: 100%"></div></div>
+                
+                🚌 <strong>搭乘大眾客運：</strong> ${busEmission} kg CO2e
+                <div class="carbon-bar"><div class="carbon-progress" style="width: 18%"></div></div>
+                
+                🚄 <strong>搭乘台灣高鐵：</strong> ${trainEmission} kg CO2e
+                <div class="carbon-bar"><div class="carbon-progress progress-green" style="width: 6%"></div></div>
+                
+                💡 <strong>減碳旅遊建議：</strong><br>
+                前往九份或大稻埕等文史景點，選擇搭乘高鐵或大眾客運，將比自行開車大幅減少約 <strong>${(carEmission - trainEmission).toFixed(2)} kg</strong> 的碳排放！讓我們用低碳漫遊的方式，更好地體驗台灣常民生活與地方文化。
+            `;
         }
     </script>
 </body>
