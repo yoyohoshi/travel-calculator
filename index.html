@@ -6,7 +6,7 @@
     <title>台灣旅遊交通碳足跡計算器</title>
     <style>
         :root {
-            --primary-color: #aac0af; /* 換成象徵環保減碳的文青綠色 */
+            --primary-color: #aac0af; 
             --secondary-color: #f0f4f1;
             --text-color: #4a3e3d;
             --accent-color: #e8a7a1;
@@ -21,7 +21,7 @@
             align-items: center;
         }
         .container {
-            max-width: 500px;
+            max-width: 550px;
             width: 100%;
             background: white;
             padding: 30px;
@@ -41,6 +41,29 @@
             font-size: 14px;
             margin-bottom: 25px;
         }
+        .route-shortcuts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        .route-btn {
+            background-color: var(--secondary-color);
+            border: 1px solid #dcdfdc;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            color: #5c7461;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .route-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
         .input-group {
             margin-bottom: 20px;
         }
@@ -58,6 +81,7 @@
             box-sizing: border-box;
             font-size: 16px;
             outline: none;
+            text-align: center;
         }
         input:focus {
             border-color: var(--primary-color);
@@ -88,20 +112,30 @@
         }
         .carbon-bar {
             background-color: #eee;
-            height: 12px;
-            border-radius: 6px;
-            margin-top: 4px;
-            margin-bottom: 12px;
+            height: 14px;
+            border-radius: 7px;
+            margin-top: 6px;
+            margin-bottom: 14px;
             overflow: hidden;
+            position: relative;
         }
         .carbon-progress {
             height: 100%;
             background-color: var(--accent-color);
             width: 0%;
-            transition: width 0.5s;
+            transition: width 0.8s ease-out;
         }
         .progress-green {
             background-color: #98ae9d;
+        }
+        .route-info {
+            background-color: #fff9f8;
+            border: 1px dashed var(--accent-color);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #8a6d6a;
         }
     </style>
 </head>
@@ -111,9 +145,19 @@
         <h1>🌱 台灣旅遊交通碳足跡計算器</h1>
         <div class="subtitle">旅行節能減碳 ‧ 守護台灣地方創生</div>
         
+        <!-- 互動捷徑選單 -->
+        <label style="text-align: center; margin-bottom: 10px;">📍 試試熱門文史旅遊路線（一鍵帶入）：</label>
+        <div class="route-shortcuts">
+            <button class="route-btn" onclick="quickSelect(5, '大稻埕文青散步（迪化街走訪老建築）')">🗺️ 大稻埕漫步 (5km)</button>
+            <button class="route-btn" onclick="quickSelect(80, '台北 ⇄ 九份老街（來回山城尋幽）')">⛰️ 台北-九份來回 (80km)</button>
+            <button class="route-btn" onclick="quickSelect(360, '台北 ⇄ 鹿港龍山寺（尋訪百年歷史古蹟）')">⛩️ 台北-鹿港來回 (360km)</button>
+        </div>
+
+        <div id="route-display" class="route-info" style="display: none;"></div>
+        
         <div class="input-group">
-            <label for="distance">預計旅遊交通總里程數 (公里/km)</label>
-            <input type="number" id="distance" placeholder="例如：從台北到九份來回約 80" min="1">
+            <label for="distance">或是自行輸入旅遊總里程數 (公里/km)</label>
+            <input type="number" id="distance" placeholder="請輸入自訂公里數" min="1">
         </div>
         
         <button class="calc-btn" onclick="calcCarbon()">計算不同交通工具碳排放</button>
@@ -122,6 +166,22 @@
     </div>
 
     <script>
+        let currentRouteNotes = "";
+
+        function quickSelect(km, routeName) {
+            document.getElementById('distance').value = km;
+            const displayDiv = document.getElementById('route-display');
+            displayDiv.style.display = 'block';
+            displayDiv.innerHTML = `📌 <strong>已選擇路線：</strong>${routeName}，共計 <strong>${km}</strong> 公里。`;
+            
+            if(km === 5) currentRouteNotes = "💡 <strong>大稻埕貼心話：</strong>5公里的短程極度推薦全程步行或騎乘 YouBike，碳排放直接歸零，還能深度走訪迪化街的街屋茶行！";
+            if(km === 80) currentRouteNotes = "💡 <strong>九份山城貼心話：</strong>前往九份多為山路，自行開車不僅容易塞車，碳排還高達 13.6 公斤！強烈建議在台北搭乘國道客運 965 或 1062 上山，省錢又減碳。";
+            if(km === 360) currentRouteNotes = "💡 <strong>鹿港古蹟貼心話：</strong>中長程的古蹟巡禮，搭乘高鐵絕對是減碳首選！相比自行開車，搭高鐵能幫台灣環境減少足足 57.6 公斤的碳排放！";
+            
+            // 自動觸發計算，提升流暢度
+            calcCarbon();
+        }
+
         function calcCarbon() {
             const km = parseFloat(document.getElementById('distance').value);
             const resDiv = document.getElementById('carbon-result');
@@ -131,26 +191,26 @@
                 return;
             }
 
-            // 碳排放係數基準 (kg CO2e / 人公里)
             const carEmission = (km * 0.17).toFixed(2);
             const busEmission = (km * 0.03).toFixed(2);
             const trainEmission = (km * 0.01).toFixed(2);
 
             resDiv.style.display = 'block';
             resDiv.innerHTML = `
-                📊 <strong>經由 Codex 技術計算之碳足跡評估：</strong><br><br>
+                📊 <strong>經由 Codex 技術動態計算結果：</strong><br><br>
                 
                 🚗 <strong>自行開車（燃油車）：</strong> ${carEmission} kg CO2e
                 <div class="carbon-bar"><div class="carbon-progress" style="width: 100%"></div></div>
                 
                 🚌 <strong>搭乘大眾客運：</strong> ${busEmission} kg CO2e
-                <div class="carbon-bar"><div class="carbon-progress" style="width: 18%"></div></div>
+                <div class="carbon-bar"><div class="carbon-progress" style="width: ${Math.max(15, (busEmission/carEmission)*100)}%"></div></div>
                 
                 🚄 <strong>搭乘台灣高鐵：</strong> ${trainEmission} kg CO2e
-                <div class="carbon-bar"><div class="carbon-progress progress-green" style="width: 6%"></div></div>
+                <div class="carbon-bar"><div class="carbon-progress progress-green" style="width: ${Math.max(6, (trainEmission/carEmission)*100)}%"></div></div>
                 
-                💡 <strong>減碳旅遊建議：</strong><br>
-                前往九份或大稻埕等文史景點，選擇搭乘高鐵或大眾客運，將比自行開車大幅減少約 <strong>${(carEmission - trainEmission).toFixed(2)} kg</strong> 的碳排放！讓我們用低碳漫遊的方式，更好地體驗台灣常民生活與地方文化。
+                <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+                    ${currentRouteNotes || `💡 <strong>減碳漫遊建議：</strong>選擇搭乘高鐵或大眾客運，將比自行開車大幅減少約 <strong>${(carEmission - trainEmission).toFixed(2)} kg</strong> 的碳排放！多利用低碳交通，一起守護地方文化與創生。`}
+                </div>
             `;
         }
     </script>
