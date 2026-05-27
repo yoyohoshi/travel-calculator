@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣旅遊全能計算器</title>
+    <style>
+        :root { --primary-color: #e8a7a1; --secondary-color: #f4e8e1; --text-color: #4a3e3d; --accent-color: #aac0af; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background-color: #faf6f5; color: var(--text-color); padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 600px; width: 100%; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 8px 24px rgba(232, 167, 161, 0.15); box-sizing: border-box; }
+        h1 { text-align: center; color: var(--primary-color); font-size: 24px; margin-bottom: 30px; }
+        .tab-buttons { display: flex; margin-bottom: 25px; gap: 8px; }
+        .tab-btn { flex: 1; padding: 10px; background-color: var(--secondary-color); border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: var(--text-color); }
+        .tab-btn.active { background-color: var(--primary-color); color: white; }
+        .calculator-content { display: none; }
+        .calculator-content.active { display: block; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; border: 2px solid var(--secondary-color); border-radius: 8px; box-sizing: border-box; }
+        button.calc-btn { width: 100%; padding: 12px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .result { margin-top: 20px; padding: 15px; background-color: #fcfbfb; border-left: 4px solid var(--primary-color); border-radius: 4px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎒 台灣旅遊全能計算器</h1>
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="switchTab('currency')">💱 旅遊換算</button>
+            <button class="tab-btn" onclick="switchTab('carbon')">🌱 碳足跡</button>
+            <button class="tab-btn" onclick="switchTab('bmi')">⚖️ 旅客 BMI</button>
+        </div>
+        
+        <div id="currency" class="calculator-content active">
+            <div class="input-group">
+                <label for="currency-type">選擇外幣</label>
+                <select id="currency-type"><option value="USD">美金 (USD)</option><option value="JPY">日幣 (JPY)</option></select>
+            </div>
+            <div class="input-group"><label for="currency-amount">輸入外幣金額</label><input type="number" id="currency-amount" placeholder="請輸入金額"></div>
+            <button class="calc-btn" onclick="calcCurrency()">計算兌換台幣</button>
+            <div id="currency-result" class="result" style="display:none;"></div>
+        </div>
+
+        <div id="carbon" class="calculator-content">
+            <div class="input-group"><label for="distance">預計旅遊交通公里數 (km)</label><input type="number" id="distance" placeholder="例如：100"></div>
+            <button class="calc-btn" onclick="calcCarbon()">計算交通碳排</button>
+            <div id="carbon-result" class="result" style="display:none;"></div>
+        </div>
+
+        <div id="bmi" class="calculator-content">
+            <div class="input-group"><label for="height">身高 (cm)</label><input type="number" id="height" placeholder="例如：175"></div>
+            <div class="input-group"><label for="weight">體重 (kg)</label><input type="number" id="weight" placeholder="例如：65"></div>
+            <button class="calc-btn" onclick="calcBMI()">計算標準 BMI</button>
+            <div id="bmi-result" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.calculator-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+        function calcCurrency() {
+            const type = document.getElementById('currency-type').value;
+            const amount = parseFloat(document.getElementById('currency-amount').value);
+            const resDiv = document.getElementById('currency-result');
+            if (isNaN(amount) || amount <= 0) return;
+            let rate = type === 'USD' ? 32.5 : 0.21;
+            resDiv.style.display = 'block';
+            resDiv.innerHTML = `💵 經 <strong>Codex</strong> 技術換算，${amount} ${type} 約可兌換 <strong> ${(amount * rate).toFixed(2)} </strong> 新台幣 (TWD)。`;
+        }
+        function calcCarbon() {
+            const km = parseFloat(document.getElementById('distance').value);
+            const resDiv = document.getElementById('carbon-result');
+            if (isNaN(km) || km <= 0) return;
+            resDiv.style.display = 'block';
+            resDiv.innerHTML = `🌿 <strong>本趟旅遊碳足跡評估：</strong><br>🚗 自駕汽車：${(km * 0.17).toFixed(2)} kg CO2e<br>🚄 台灣高鐵：${(km * 0.01).toFixed(2)} kg CO2e`;
+        }
+        function calcBMI() {
+            const h = parseFloat(document.getElementById('height').value) / 100;
+            const w = parseFloat(document.getElementById('weight').value);
+            const resDiv = document.getElementById('bmi-result');
+            if (isNaN(h) || isNaN(w)) return;
+            const bmi = (w / (h * h)).toFixed(1);
+            resDiv.style.display = 'block';
+            resDiv.innerHTML = `⚖️ <strong>標準公式計算結果：</strong><br>您的 BMI 指數為 <strong>${bmi}</strong>。<br>🏃‍♂️ 來到九份山城多爬石階，能有效保持身體健康！`;
+        }
+    </script>
+</body>
+</html>
